@@ -1,0 +1,39 @@
+#!/bin/bash
+# Task: Parallel Pokémon Data Retrieval
+
+POKEMONS=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+OUTPUT_DIR="pokemon_data"
+API_URL="https://pokeapi.co/api/v2/pokemon"
+
+# Create output directory if missing
+mkdir -p "$OUTPUT_DIR"
+
+# Windows Git Bash-friendly jq path
+JQ="./Advanced_shell/jq.exe"
+if [[ ! -f "$JQ" ]]; then
+    echo "Error: jq executable not found at $JQ"
+    exit 1
+fi
+
+fetch_pokemon() {
+    local pokemon=$1
+    local output_file="$OUTPUT_DIR/$pokemon.json"
+
+    echo "Fetching data for $pokemon..."
+    if curl -s -f -o "$output_file" "$API_URL/$pokemon"; then
+        echo "Saved data to $output_file ✅"
+    else
+        echo "❌ Failed to fetch $pokemon"
+        rm -f "$output_file"
+    fi
+}
+
+# Launch all fetches in parallel
+for pokemon in "${POKEMONS[@]}"; do
+    fetch_pokemon "$pokemon" &
+done
+
+# Wait for all background processes
+wait
+
+echo "All fetches completed!"
