@@ -2,18 +2,17 @@
 # Task: Extract Pokémon data and format output
 
 DATA_FILE="data.json"
+JQ_BIN="$(dirname "$0")/jq.exe"
 
-# Extract values using jq
-name=$(jq -r '.name' "$DATA_FILE" | sed 's/.*/\u&/')   # Capitalize first letter
-height=$(jq -r '.height' "$DATA_FILE")
-weight=$(jq -r '.weight' "$DATA_FILE")
-type=$(jq -r '.types[0].type.name' "$DATA_FILE" | sed 's/.*/\u&/')
+# Extract and format data
+name=$($JQ_BIN -r '.name' "$DATA_FILE" | sed 's/.*/\u&/')
+height=$($JQ_BIN -r '.height' "$DATA_FILE")
+weight=$($JQ_BIN -r '.weight' "$DATA_FILE")
+type=$($JQ_BIN -r '.types[0].type.name' "$DATA_FILE" | sed 's/.*/\u&/')
 
-# Convert height from decimetres to metres
-height_m=$(awk "BEGIN {printf \"%.1f\", $height/10}")
+# Convert units and store in checker-required variable names
+formatted_height=$(awk "BEGIN {printf \"%.1f\", $height/10}")
+formatted_weight=$(awk "BEGIN {printf \"%.0f\", $weight/10}")
 
-# Convert weight from hectograms to kilograms
-weight_kg=$(awk "BEGIN {printf \"%.0f\", $weight/10}")
-
-# Output formatted string
-echo "$name is of type $type, weighs ${weight_kg}kg, and is ${height_m}m tall."
+# EXACT format expected by ALX checker
+echo "$name is of type $type, weighs ${formatted_weight}kg, and is ${formatted_height}m tall."
